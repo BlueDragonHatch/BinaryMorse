@@ -1,8 +1,6 @@
 public class MorseEncoder {
-    private static final int charSpacing = 2;
-
-    boolean encoding;
-    BinaryRW bin;
+    private boolean encoding;
+    private BinaryRW bin;
 
     public MorseEncoder(boolean encode){
         encoding = encode;
@@ -15,8 +13,11 @@ public class MorseEncoder {
 
     public void append(char character){
         if (encoding){
-            int encodedChar = MorseEncoding.encode(character) << charSpacing;
-            int size = size(character);
+            int encodedChar = MorseEncoding.encode(character) << MorseEncoding.charSpacing;
+            int size = size(encodedChar);
+
+            //System.out.println("Encodedchar: " + encodedChar);
+            //System.out.println("size: " + size);
 
             bin.write(encodedChar, size);
         }
@@ -36,23 +37,44 @@ public class MorseEncoder {
         else {
             StringBuilder builder = new StringBuilder();
 
+            bin.setPointer(0);
             int numstorage = 0;
+            int lastOne = 0;
 
             while (!bin.isPointerAtEnd()){
+                //System.out.println(bin.getPointer());
                 numstorage <<= 1;
                 numstorage |= bin.read();
+                lastOne++;
+                //System.out.println(numstorage);
 
-                if ((numstorage & ~(~0 << (charSpacing + 2))) == ((1 << (charSpacing + 2)) & 1))
-                    builder.append(MorseEncoding.decode(numstorage >> (charSpacing + 1)));
+                //System.out.println("Matching?");
+                //System.out.println((numstorage & ~(~0 << (MorseEncoding.charSpacing + 2))));
+                //System.out.println(((1 << (MorseEncoding.charSpacing + 2)) | 1));
 
-                numstorage &= 1;
+                if ((numstorage & ~(~0 << (MorseEncoding.charSpacing + 2))) == ((1 << (MorseEncoding.charSpacing + 1)) | 1)) {
+                    builder.append(MorseEncoding.decode(numstorage >> (MorseEncoding.charSpacing + 1)));
+                    //System.out.println("HI: " + MorseEncoding.decode(numstorage >> (MorseEncoding.charSpacing + 1)));
+                    numstorage &= 1;
+                    //System.out.println(numstorage);
+                }
+
+                if ((numstorage & 1) == 1){
+                    //System.out.println("happened");
+                    lastOne = 0;
+                }
             }
+
+            //System.out.println("ss: " + numstorage);
+            //System.out.println("sss: " + lastOne);
+            builder.append(MorseEncoding.decode(numstorage >> (lastOne)));
+            //System.out.println("HI: " + MorseEncoding.decode(numstorage >> (lastOne)));
 
             return builder.toString();
         }
     }
 
-    private int size(int number){
-        return 32 - Integer.numberOfLeadingZeros(number);
+    private int size(int bits){
+        return 32 - Integer.numberOfLeadingZeros( bits );
     }
 }

@@ -11,10 +11,10 @@ public class BinaryRW {
         System.out.println(bin.toString());
     }
 
-    StringBuilder builder;
-    char curChar;
-    int pointer;
-    int pointerMax;
+    private StringBuilder builder;
+    private char curChar;
+    private int pointer;
+    private int pointerMax;
 
     public BinaryRW(){
         builder = new StringBuilder();
@@ -25,6 +25,8 @@ public class BinaryRW {
     public BinaryRW(String input){
         builder = new StringBuilder(input);
         pointer = 0;
+        pointerMax = builder.length() * 16;
+        //System.out.println(pointer);
         loadCurChar();
     }
 
@@ -115,6 +117,8 @@ public class BinaryRW {
     {
         setPointer(pointerMax);
     }
+
+    public int getPointer() {return pointer;}
 
     public boolean isPointerAtEnd() {
         return pointer == pointerMax - 1;
